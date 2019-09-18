@@ -1,0 +1,910 @@
+//10427113 謝文凱 
+//10527143 葉日翔 
+//
+
+
+# include <stdio.h>
+# include <stdlib.h>
+# include <iostream>
+# include <fstream>
+# include <string.h>
+# include <vector>
+# include <math.h>
+# include <cmath> 
+
+using namespace std ;
+
+FILE *fp, *foutsn , *foutgn , *finsn , *fingn ;
+
+char outputsn[50] ;
+char outputgn[50] ;
+
+char name[50] ;
+bool end = false ;
+class Data {
+	
+	public :
+		int num = -1 ;
+		string schoolid  = "" ;
+		string schoolname = "" ;
+		string deid = "" ;
+		string dename = "" ;
+		string daynight = "" ;
+		string training = "";
+		string level = "" ;
+		string levelname = "" ;		
+		string studentnum = "" ;
+		string teachernum = "" ;
+		int graduationnum = 0 ;
+		char graduanum[50] ;
+		string areaid = "" ;
+		string area = "" ;
+		string systemid = "" ;
+		string system = "" ;
+		inputobject() ;
+		outputobject() ;
+		input7objectsn() ;
+		input7objectgn() ;		
+		
+		string inputword() { // 輸入字串 
+			
+			int ifin = 0 ;
+			char a ;
+			string word = "" ;
+			fscanf( fp, "%c", &a ) ;
+			
+
+			while( a != '\t' && a != '\n'&& a != ' ' && !feof(fp) ) { // 讀到該停為止 
+				ifin++ ;
+				word = word + a ;
+				fscanf( fp, "%c", &a ) ;
+				
+			}		
+			
+			if ( ifin == 0 ) // 若有缺項 
+				//fscanf( fp, "%c", &a ) ;
+			
+			return word ;	
+		}
+		
+		
+		int inputnum() { // 讀入檔案數字 
+			int a ;
+			fscanf( fp, "%d ", &a ) ;
+			return a ;
+		}
+		
+		void inputgraduationnum( char graduationnum[50] ){ // 讀入畢業生人數 
+			
+			fscanf( fp, "%c", &graduationnum[0] ) ;
+
+			if( graduationnum[0] == '\t' ) { // 若缺項 
+				 graduationnum[0] = 0;
+			}
+			else {
+				int i = 0 ;
+				while( graduationnum[i] != '\t' && graduationnum[i] != '\n'&& graduationnum[i] != ' ' && !feof(fp) ) { // 讀到該停為止 
+					i++ ;
+					fscanf( fp, "%c", &graduationnum[i] ) ;
+				
+				}
+			
+			}
+		}
+};
+
+
+Data::inputobject() { // 讀入所有該筆資料內容 
+ 
+ 	schoolid = inputword() ;
+ 	schoolname = inputword() ;	
+ 	deid = inputword();
+ 	dename = inputword();
+ 	daynight = inputword();
+ 	if( daynight != "" ) {
+ 		training = inputword();
+		daynight = daynight + " " + training ;
+	}
+ 	level = inputword();
+ 	if( level != "" ) {
+ 		levelname = inputword();
+		level = level + " " + levelname ;
+	}
+ 	studentnum = inputword();
+ 	teachernum = inputword();
+ 	inputgraduationnum(graduanum);	
+ 	graduationnum = atoi( graduanum ) ;
+ 	areaid = inputword();
+ 	area = inputword();
+ 	systemid = inputword();
+ 	system = inputword();
+ 	
+ 	
+}
+
+
+Data::outputobject() { // 輸出 
+	cout << schoolname << ", "  ;
+	cout << dename << "\t"  ;
+	cout << daynight << "\t" ;
+	cout << level << "\t" ;
+	cout << graduationnum << "\t" << endl  ;
+}
+
+class item{ // 新的資料型態 
+	public :
+		int num = 0 ;
+		string schoolname = "" ;
+	
+};
+
+
+class Node{
+	public : 
+		vector<item> left;
+		vector<item> mid;
+		vector<item> right;
+		Node * leftptr = NULL ;
+		Node * midptr	= NULL ;
+		Node * rightptr = NULL ;
+		Node * tempptr = NULL ;
+		Numofkey() ;
+		noleaf() ;
+};
+
+Node::Numofkey(){
+	int i = 0 ;
+	if( left.size() != 0 )
+		i++;
+		
+	if( right.size() != 0 )
+		i++;
+		
+	if( mid.size() != 0 )
+		i++;
+		
+	return i ;
+}
+
+Node::noleaf() {
+	if( leftptr == NULL && rightptr == NULL && midptr == NULL && tempptr == NULL )
+		return true ;
+	
+	return false ;
+}
+
+vector<Data> Datavector ;
+vector<item> Newitem ;
+
+
+void InputData() { // 把檔案內資料放進vector 
+	Data node ;
+	node.inputobject() ;
+	if( node.schoolname != "" && node.graduanum[0] != 0)
+		Datavector.push_back(node);
+}
+
+
+void OutputData() { // 輸出 
+	int size = 0 ;
+	size = Datavector.size() ;
+	for( int i = 0 ; i < size ; i++ ) {
+		cout << "[" << i+1 << "] " ;
+		Datavector[i].num = i+1 ;
+		Datavector[i].outputobject() ;
+	}
+}
+
+
+void Inputgarbage( string num ) { //把上面3行讀掉 
+
+	char a;
+
+
+	string output2 , output3 ;
+	output2 = num ;
+	output3 = num ;
+
+	output2 = "tree" + output2 + "name.txt" ; // 使output2 = 使用者輸入之檔案名稱 
+	output3 = "tree" + output3 + "num.txt" ; // 同上，(output3) 
+
+	num = "input" + num + ".txt" ;
+	
+	strcpy(name, num.c_str()); 
+	strcpy(outputsn, output2.c_str());
+	strcpy(outputgn, output3.c_str());
+	
+	fp=fopen( name ,"rt") ;
+
+
+	if ( fp ) {	 // 若有成功開檔 
+		char a ;
+		string word = "" ;
+		for( int i = 0 ; i < 3 ; i++ ) { // 把上面3行讀掉 
+			fscanf( fp, "%c", &a ) ;
+			
+			while( a != '\n' ) {  
+				word = word + a ;
+				fscanf( fp, "%c", &a ) ;
+			}	
+			
+			a = '\0' ;
+			word = "" ;
+		}
+	} 
+			
+
+	else {
+		cout << "### " << name << " does not exist! ###\n" ;
+	}
+}
+
+int i = 1 ;
+
+
+int top = 1 ;
+
+void FindMatch( int heapnum ) { // 去原先的vector找出符合的資料 
+	for( int i = 0 ; i < Datavector.size() ; i++ ) {
+		if( heapnum == Datavector[i].num ) {
+			cout << "Top  " << top << ": [" << Datavector[i].num << "] " ;
+			Datavector[i].outputobject() ;
+			top++ ; 
+		}
+	} 
+} 
+
+
+
+void Copyitem() {
+	// 將資料copy到新型態 
+    for (int i = 0 ; i < Datavector.size() ; i++ ) {
+    	if( Datavector[i].schoolname != "" ) {
+    		item node ;
+    		node.num = Datavector[i].num ;  
+    		node.schoolname = Datavector[i].schoolname;
+			Newitem.push_back( node ) ;
+  
+    	}
+    }
+}
+
+
+
+
+bool isEmpty( Node * root ) { // 若指標為空 
+	if( root == NULL )
+		return true ;
+	
+	return false ;
+}
+
+
+void split(Node * &root, Node * &work , Node * &parent) ;
+void FindNode( int i, Node * &work, Node * &root, Node * &parent ) ;
+void FindSplitNode(Node * &root, Node * &work, Node * &parent ) ;
+void insert (int i , Node * &work ) ;
+vector<item> Search( Node * work, string NAME ) ;
+void Outputsearch( Node * root, string NAME ) ;
+
+
+int main () {
+	string command = "123";
+	int num = 1 ;
+	int graduationnum = 0 ;
+	string schoolname ;
+	string dename ;
+	string daynight ;
+	string level ;
+	
+		
+	
+
+	
+	while ( command != "0" ) {	
+		cout << "*************************************************" << endl;
+		cout << " On-machine Exercise                            *" << endl;
+		cout << " Mission 1: Build a 2-3 tree                    *" << endl;
+		cout << " Mission 2: Search a 2-3 tree                   *" << endl;
+		cout << "*************************************************" << endl << endl ;
+
+
+		cout << "Input the file number: 301, 302, ... [0]Quit" << endl ;
+		getline(cin, command); 
+		string file = command ;	
+		if ( command != "0" ) {
+			Inputgarbage( file ) ; // 把上面三行讀掉 
+			
+			while( !feof(fp) && fp ) // 開始讀檔 
+			  InputData() ;
+
+	  		
+			if ( fp ) { // 若有成功開檔 
+			
+		  		
+
+				OutputData() ;	// 印出所有資料 
+				Copyitem() ; // 把資料copy到新型別 
+
+
+			
+					
+				cout << endl ;
+    			cout << "########################################################" << endl ;
+				cout << "Mission 1: Build a 2-3 tree" << endl ;
+				cout << "########################################################" << endl ;
+				
+				Node * root = NULL ; //初始化為NULL 
+				Node * parent = NULL ;
+				Node * work = NULL ;
+				
+
+				for( int i = 0 ; i < Newitem.size() ; i++ ) { // 開始把每一筆資料插入並做出23樹 
+					work = root ;
+					FindNode( i, work, root, parent ) ;
+					
+				}
+
+				int f = 0 ;
+				int count = 1 ;
+
+
+				for( int i = 0 ; i < root->left.size() ; i++ ) {   // 印出樹根之資料 
+					for( int j = 0 ; j < Datavector.size() ; j ++ ) {
+						if( root->left[i].num == Datavector[j].num ) {
+							cout << count << ":  ["<< Datavector[j].num << "] ";
+							Datavector[j].outputobject() ;
+							count++ ;
+						}
+					}
+					
+				}
+				
+				for( int i = 0 ; i < root->right.size() ; i++ ) { // 印出樹根之資料  
+					for( int j = 0 ; j < Datavector.size() ; j ++ ) {
+						if( root->right[i].num == Datavector[j].num ) {
+							cout << count << ":  ["<< Datavector[j].num << "] ";
+							Datavector[j].outputobject() ;
+							count++ ;
+							
+						}
+					}
+					
+				}
+				
+			
+
+
+				
+				cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl ;
+				cout << "Mission 2: Search a 2-3 tree (Search key is college name)" << endl ;
+				cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl << endl ;
+				
+				cout << "Enter a name to search:" << endl ;
+				string NAME = "" ;
+				getline(cin, NAME) ;
+				while( NAME == "" )
+					getline(cin, NAME) ;
+					
+				Outputsearch( root, NAME ) ;
+				
+				
+				top = 1 ;
+		
+				Datavector.clear() ; // 還原以備下次利用 
+				Newitem.clear() ;
+				cout << endl ;
+				cout << "[0]Quit or [Any other]continue? " << endl ;
+				getline(cin, command); 
+				cout << "\n" ;
+				
+			}
+		}
+		
+	}
+	
+}
+
+
+
+
+void FindNode( int i, Node * &work, Node * &root, Node * &parent ) {
+
+	if ( isEmpty( root ) ) { // 最一開始 
+		root = new Node ;
+		work = root ;
+		root->left.push_back( Newitem[i] ) ;
+	}
+	else {
+		
+		int j = work->Numofkey() ; 
+	
+		if ( j == 1 ) { // only one key
+			
+			if ( Newitem[i].schoolname > work->left[0].schoolname ) {               
+			
+				if ( work->noleaf() ) {          //  "沒有"子節點 
+					insert( i, work ) ;   //  把new存入work的節點中	
+				}
+				else {                          //   "有"子節點 
+					FindNode( i, work->rightptr, root,work );     // 遞迴 	
+				}
+				
+			}
+			else if ( Newitem[i].schoolname < work->left[0].schoolname ) {
+				
+				if ( work->noleaf() ) {          //      "沒有"子節點 
+					insert( i, work ) ;    //  把new存入work的節點中	
+				}
+				else {                          //      "有"子節點 
+					FindNode( i, work->leftptr, root, work );     //指向左邊節點 		
+				} 
+				
+			}
+			else if ( Newitem[i].schoolname == work->left[0].schoolname ) {   // 取出new的值
+				work->left.push_back( Newitem[i] ) ;    // 將new的值存入work中的left vector內 
+			}
+			
+			
+			
+			
+		}
+		else if ( j == 2 ){
+			if ( Newitem[i].schoolname > work->right[0].schoolname ) {            
+				if ( work->noleaf() ) {	 //  "沒有"子節點  
+					insert( i, work ) ; //  把new存入work的節點中 
+					FindSplitNode( root, work, parent ) ; // 找出需要分裂的點 
+				}
+				else {
+					FindNode( i, work->rightptr, root, work );    //找出要插入的地方             
+					FindSplitNode( root, work, parent ) ; // 找出需要分裂的點  
+				}
+				
+			    
+				
+			}
+			else if ( Newitem[i].schoolname > work->left[0].schoolname && Newitem[i].schoolname < work->right[0].schoolname ) {
+				
+				if ( work->noleaf() ) { //  "沒有"子節點  
+					insert( i, work ) ;  //  把new存入work的節點中  
+					FindSplitNode( root, work, parent ) ; // 找出需要分裂的點  
+				}
+				else {
+					
+					FindNode( i, work->midptr, root, work );     //找出要插入的地方            
+					FindSplitNode( root, work, parent ) ;// 找出需要分裂的點 
+				}
+				
+				
+			}
+			else if ( Newitem[i].schoolname < work->left[0].schoolname ) {
+				
+				if ( work->noleaf() ) { //  "沒有"子節點 
+					insert( i, work ) ; //  把new存入work的節點中  
+					FindSplitNode( root, work, parent ) ;// 找出需要分裂的點  
+				}
+				else {
+					
+					FindNode( i, work->leftptr, root, work );    //找出要插入的地方      
+					FindSplitNode( root, work, parent ) ;// 找出需要分裂的點  
+				}
+				
+				
+			}
+			else if ( Newitem[i].schoolname == work->left[0].schoolname ) {      
+				work->left.push_back( Newitem[i] ) ;              // 插入new的值
+				
+			}
+			else if ( Newitem[i].schoolname == work->right[0].schoolname ) {
+				
+				work->right.push_back( Newitem[i] ) ;                  // 插入new的值
+				
+			}	
+			
+		}		
+								
+	}
+
+
+
+	
+}
+
+
+
+void insert ( int i , Node * &work ) {
+	
+	int j = work->Numofkey() ; 
+		
+	if ( j == 1 ) { // 只有一個key 
+		
+		if ( Newitem[i].schoolname > work->left[0].schoolname ) // 插入右邊 
+			work->right.push_back( Newitem[i] ) ;
+		else {
+			work->right.push_back( Newitem[i] ) ; // 插入左邊 
+			swap ( work->right, work->left ) ;
+			
+		}
+	} 
+	  
+	else if ( j == 2 ) { // 2個key 
+		
+		if ( Newitem[i].schoolname > work->right[0].schoolname ) { // 插入右邊並將原本右邊的放到中間 
+			work->mid.push_back( Newitem[i] ) ;
+			swap ( work->mid, work->right ) ;		
+		}
+		else if ( Newitem[i].schoolname < work->left[0].schoolname ) { // 插入左邊並將原本左邊的放到中間  
+			work->mid.push_back( Newitem[i] ) ;
+			swap ( work->mid, work->left ) ;
+		}
+		else {
+			
+			work->mid.push_back( Newitem[i] ) ;// 插入中間 
+			
+		}
+		
+	} 
+	
+}
+
+
+void FindSplitNode(Node * &root, Node * &work, Node * &parent ) {
+	if ( work == NULL )
+	 	return ;
+	
+	int key = work->Numofkey() ; 
+	if ( key == 3 ) // 開始分裂 
+		split( root, work, parent ) ;
+	 
+	else {
+		FindSplitNode(root ,work->rightptr, work) ;
+		FindSplitNode(root, work->midptr, work) ;
+		FindSplitNode(root, work->leftptr, work) ;
+	}
+	
+	
+}
+
+
+
+void split(Node * &root, Node * &work , Node * &parent) {
+	
+	if( parent == NULL ) { // 最一開始 
+		
+		Node * temp1 = NULL ;
+		Node * temp2 = NULL ;
+		temp1 = new Node ;
+		temp2 = new Node ;
+		temp1->left = work->left ;
+		temp2->left = work->right ;
+		if( work->noleaf() ) { // first time
+			Node * top = NULL ;
+			top = new Node ;
+			swap( top->left, work->mid ) ;
+			top->leftptr = temp1 ;
+			top->rightptr = temp2 ;
+			root = top ;
+		}
+		else { // others
+		
+			if( work->midptr->left[0].schoolname > work->tempptr->left[0].schoolname ) {
+				//創造2個新的node以便重新連接 
+				Node * top = NULL ;
+				top = new Node ;
+				swap( top->left, work->mid ) ;   
+				temp1->leftptr = work->leftptr ;
+				temp1->rightptr = work->tempptr ;
+				temp2->leftptr = work->midptr ;
+				temp2->rightptr = work->rightptr;
+				top->leftptr = temp1 ;
+				top->rightptr = temp2 ;
+				root = top ;
+				
+			}
+			else {
+				//創造2個新的node以便重新連接 
+				Node * top = NULL ;
+				top = new Node ;
+				swap( top->left, work->mid ) ;
+				temp1->leftptr = work->leftptr ;
+				temp1->rightptr = work->midptr ;
+				temp2->leftptr = work->tempptr ;
+				temp2->rightptr = work->rightptr;
+				top->leftptr = temp1 ;
+				top->rightptr = temp2 ;
+				root = top ;
+			}
+		}
+	}
+	else { // 從有第2層開始 
+
+		int CountParentKey = parent->Numofkey() ; 
+		
+		if( work->noleaf() ){ // 到底了 
+			
+			if ( CountParentKey == 1 ) {   
+	
+				if ( work->mid[0].schoolname < parent->left[0].schoolname ) { 
+					// 把原本左邊的接左邊，右邊的接中間 
+					swap( parent->left, parent->right ) ;
+					swap( parent->left, work->mid ) ;
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					parent->leftptr = temp1 ;
+					parent->midptr = temp2 ;
+					
+				}
+				else {                                  
+				// 把原本右邊的接右邊，左邊的接中間
+					swap( parent->right, work->mid ) ;
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					parent->midptr = temp1 ;
+					parent->rightptr = temp2 ;
+					
+					
+				}
+				
+			}
+			else { // parent2 keys 
+				
+				if ( work->mid[0].schoolname < parent->left[0].schoolname ) {
+					// 原本左邊的接左邊，右邊的接在temp 
+					swap( parent->left, parent->mid ) ;
+					swap( parent->left, work->mid ) ;
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					parent->leftptr = temp1 ;
+					parent->tempptr = temp2 ;
+					
+					
+				}
+				else if ( work->mid[0].schoolname > parent->left[0].schoolname && work->mid[0].schoolname < parent->right[0].schoolname ) {
+					// 原本左邊的接temp，右邊的接在mid 
+					swap( work->mid, parent->mid ) ;
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					parent->tempptr = temp1 ;
+					parent->midptr = temp2 ;
+					
+				}
+				else if ( work->mid[0].schoolname > parent->right[0].schoolname ) {
+					// 原本左邊的接temp，右邊的接在right	
+					swap( parent->right, parent->mid ) ;
+					swap( parent->right, work->mid ) ;
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					parent->tempptr = temp1 ;
+					parent->rightptr = temp2 ;
+					
+				}
+			
+			}
+			
+		}
+		else{ // 在途中 
+			
+			if ( CountParentKey == 1 ) {       // parent 1 key 
+	
+				if ( work->mid[0].schoolname < parent->left[0].schoolname ) {     
+					// parent左邊接左邊，中間接右邊   
+					swap( parent->left, parent->right ) ;
+					swap( parent->left, work->mid ) ;
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					temp1->leftptr = work->leftptr ;
+					temp1->rightptr = work->tempptr;
+					temp2->leftptr = work->midptr ;
+					temp2->rightptr = work->rightptr ;
+					
+					parent->leftptr = temp1 ;
+					parent->midptr = temp2 ;
+					
+				}
+				else {    
+					// parent中間接左邊，右邊接右邊 
+					swap( parent->right, work->mid ) ;
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					temp1->leftptr = work->leftptr ;
+					temp1->rightptr = work->midptr;
+					temp2->leftptr = work->tempptr ;
+					temp2->rightptr = work->rightptr ;
+					
+					parent->midptr = temp1 ;
+					parent->rightptr = temp2 ;
+					
+					
+				}
+				
+				
+			}
+			// parent 2 key  
+			else {
+				
+				if ( work->mid[0].schoolname < parent->left[0].schoolname ) {
+					// parent左邊接左邊，temp接右邊 
+					swap( parent->left, parent->mid ) ;
+					swap( parent->left, work->mid ) ;
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					temp1->leftptr = work->leftptr ;
+					temp1->rightptr = work->tempptr ;
+					temp2->leftptr = work->midptr ;
+					temp2->rightptr = work->rightptr ;
+					
+					
+					parent->leftptr = temp1 ;
+					parent->tempptr = temp2 ;
+					
+					
+				}
+				else if ( work->mid[0].schoolname > parent->left[0].schoolname && work->mid[0].schoolname < parent->right[0].schoolname ) {
+					// parent temp接左邊，mid接右邊 
+					swap( work->mid, parent->mid ) ;
+					
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					temp1->leftptr = work->leftptr ;
+					temp1->rightptr = work->tempptr ;
+					temp2->leftptr = work->midptr ;
+					temp2->rightptr = work->rightptr ;
+					
+					parent->tempptr = temp1 ;
+					parent->midptr = temp2 ;
+					
+				}
+				else if ( work->mid[0].schoolname > parent->right[0].schoolname ) {
+					// parent temp接左邊，right接右邊 					
+					swap( parent->right, parent->mid ) ;
+					swap( parent->right, work->mid ) ;
+					
+					Node * temp1 = NULL ;
+					Node * temp2 = NULL ;
+					temp1 = new Node ;
+					temp2 = new Node ;
+					temp1->left = work->left ;
+					temp2->left = work->right ;
+					temp1->leftptr = work->leftptr ;
+					temp1->rightptr = work->midptr ;
+					temp2->leftptr = work->tempptr ;
+					temp2->rightptr = work->rightptr ;
+					
+					parent->tempptr = temp1 ;
+					parent->rightptr = temp2 ;
+				}
+			
+			}
+			
+		}
+	
+	}
+}
+
+
+vector<item> Search( Node * work, string NAME ){
+
+	if ( work == NULL ) { // 沒找到 
+		vector<item> empty ;
+		return empty ;
+	}
+	
+		
+	
+	else {
+		
+		int key = work->Numofkey() ;
+		
+		if ( key == 1 ) {
+	
+			if( NAME == work->left[0].schoolname ) {
+				return work->left ; 
+				
+			}
+			else if ( NAME > work->left[0].schoolname ) {
+				return Search( work->rightptr, NAME ) ;
+				
+			}
+			else {
+				return Search( work->leftptr, NAME ) ;
+			}
+			
+			
+			
+			
+		}
+		else {   //   key = 2
+		
+
+			if( NAME == work->left[0].schoolname ) {
+				return work->left ; 
+				
+			}
+			else if( NAME == work->right[0].schoolname ) {
+				return work->right ; 
+				
+			}
+			else if( NAME < work->left[0].schoolname ) {
+				return Search( work->leftptr, NAME ) ;
+				
+			}
+			else if( NAME > work->right[0].schoolname ) {
+				return Search( work->rightptr, NAME ) ;
+				
+			}
+			else {
+				return Search( work->midptr, NAME ) ;
+			}
+			
+		}
+	
+	}
+}
+
+	
+void Outputsearch(Node*root, string NAME) {
+
+	vector<item> current ;
+	
+	current =  Search( root, NAME ) ;
+	
+	if( current.size() == 0 )
+		cout << NAME << " cannot find a match !" <<endl ; 
+		
+	vector<Data> temp ;
+	
+	for( int i = 0 ; i < current.size() ; i++ ) { // 找出符合的資料 
+		for( int j = 0 ; j < Datavector.size(); j++ ) {
+			if( current[i].num == Datavector[j].num )
+				temp.push_back(Datavector[j]) ;
+		}
+	}
+	
+	for( int i = 0 ; i < temp.size() ; i ++ ){  // 泡沫排序 
+		for( int j = i+1 ; j < temp.size(); j++ ){
+			if( temp[i].graduationnum < temp[j].graduationnum )
+				swap(temp[i], temp[j] ) ;
+		}
+	}
+	
+	for( int i = 0, count = 1 ; i < temp.size() ; i ++, count ++ ){ // 印出資料 
+		cout << count << ":  ["<< temp[i].num << "] ";
+		temp[i].outputobject() ;
+	}
+}
